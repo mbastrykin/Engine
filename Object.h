@@ -1,0 +1,145 @@
+#pragma once
+#include <SFML/Graphics.hpp>
+#include "ControlEng.h"
+
+const float PI = 3.14159265f;
+
+
+class Object {
+//public:
+//    virtual void save(std::ofstream& out) const = 0;
+//    virtual void load(std::ifstream& in) = 0;
+//    virtual void draw(sf::RenderWindow& window) const = 0;
+//    virtual ~Object() = default;
+};
+
+
+struct Wall : Object {
+    sf::Vector2f wallX, wallY;
+    int colorWall; // цвет стенки с помощью клавиатуры 1-9
+    sf::Color coloorWallq;
+
+    Wall() : wallX(0, 0), wallY(0, 0), colorWall(1), coloorWallq(sf::Color::White) {}
+
+    Wall(sf::Vector2f a, sf::Vector2f b, int colorWall = 1)
+        : wallX(a), wallY(b), colorWall(colorWall), coloorWallq(getWallColor(colorWall)) {
+    }
+
+    void draw(sf::RenderWindow& win) const {
+        sf::Vertex line[] = {
+            sf::Vertex(wallX, coloorWallq),
+            sf::Vertex(wallY, coloorWallq)
+            // Отвечает за вершины линии мб потом сделать - общая длина / n. где n - кол-во вершин    
+        };
+        win.draw(line, 2, sf::Lines); // 2 потому что мы рисуем только две вершины
+        // мб потом сделать деление вершин
+    }
+
+    sf::Color getWallColor(int index) {
+        switch (index) {
+        case 1: return sf::Color::White;
+        case 2: return sf::Color::Red;
+        case 3: return sf::Color::Green;
+        case 4: return sf::Color::Blue;
+        case 5: return sf::Color::Yellow;
+        case 6: return sf::Color::Magenta;
+        case 7: return sf::Color::Cyan;
+        case 8: return sf::Color(255, 128, 0); // оранжевый
+        case 9: return sf::Color(128, 0, 255); // фиолетовый
+        default: return sf::Color::White;
+        }
+    }
+};
+
+class Player {
+public:
+
+    sf::Texture playerTexture;
+    sf::Sprite playerSprite;
+
+    sf::Vector2f pos;
+    float angle = 0; // направление взгляда
+    float fov = 90;  // поле зрения
+    float speed = 5.0f;
+    float x, y;
+
+    Player(float x, float y): x(x), y(y) {
+        
+        pos = { x, y };
+    }
+
+    void update() {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) angle -= 2;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) angle += 2;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+            pos.x += std::cos(angle * PI / 180) * speed;
+            pos.y += std::sin(angle * PI / 180) * speed;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+            pos.x -= std::cos(angle * PI / 180) * speed;
+            pos.y -= std::sin(angle * PI / 180) * speed;
+        }
+    }
+
+    void castRays(sf::RenderWindow& win, const std::vector<Wall>& walls) {
+        int numRays = 90;
+        float step = fov / numRays;
+
+        for (int i = 0; i < numRays; i++) {
+            float rayAngle = (angle - fov / 2.0f) + i * step;
+            float rayX = std::cos(rayAngle * PI / 180);
+            float rayY = std::sin(rayAngle * PI / 180);
+            float minDist = 500;
+            sf::Vector2f hitPoint = pos + sf::Vector2f(rayX, rayY) * minDist;
+
+            for (const auto& wall : walls) {
+                sf::Vector2f p = pos;
+                sf::Vector2f d = { rayX, rayY };
+                sf::Vector2f v1 = wall.wallX;
+                sf::Vector2f v2 = wall.wallY;
+                sf::Vector2f v = v2 - v1;
+
+                float denom = d.x * v.y - d.y * v.x;
+                if (std::abs(denom) < 0.0001f) continue;
+
+                float t = ((v1.x - p.x) * v.y - (v1.y - p.y) * v.x) / denom;
+                float u = ((v1.x - p.x) * d.y - (v1.y - p.y) * d.x) / denom;
+
+                if (t > 0 && u >= 0 && u <= 1) {
+                    sf::Vector2f intersect = p + t * d;
+                    float dist = std::hypot(intersect.x - pos.x, intersect.y - pos.y);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        hitPoint = intersect;
+                    }
+                }
+            }
+
+            sf::Vertex ray[] = {
+                sf::Vertex(pos, sf::Color::White),
+                sf::Vertex(hitPoint, sf::Color::White)
+            };
+            win.draw(ray, 2, sf::Lines);
+        }
+    }
+
+private:
+    sf::Texture texture;
+    sf::Sprite sprite;
+};
+
+
+class Enemy {
+public:
+
+    sf::Texture enemyTexture;
+    sf::Sprite enemySprite;
+    sf::Vector2f pos;
+    float x, y;
+    
+    Enemy(float x, float y) : x(x), y(y) {
+
+      pos = { x, y };
+    }
+
+};
