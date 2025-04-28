@@ -111,7 +111,10 @@ public:
                     if (dist < minDist) {
                         minDist = dist;
                         hitPoint = intersect;
-                    }
+                        
+                    }   
+                }
+                if (t< 0 && u<= 0 && u>=2){
                 }
             }
 

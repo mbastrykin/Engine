@@ -8,42 +8,11 @@
 #include <commdlg.h> 
 #include <locale>   
 #include "Object.h"
-
-#define ID_FILE_SAVE_US 0
-#define ID_FILE_SAVE 7
-#define ID_FILE_EXIT 1
-#define ID_FILE_LOAD 2
-#define ID_FILE_OBJECT 3
-#define ID_FILE_PLAYER 4
-#define ID_FILE_WALL 5
-#define ID_FILE_ENEMY 6
-#define ID_FILE_DELETE 8
-#define ID_FILE_NEW 9
+#include "HeadObj.h"
 
 std::vector<Wall> walls;
 std::vector <Player> player; 
-
-void AddMenu(HWND hwnd) {
-    
-    HMENU hMenuBar = CreateMenu();             // Главное меню
-
-    HMENU hMenuFile = CreatePopupMenu();       
-    AppendMenu(hMenuFile, MF_STRING, ID_FILE_NEW, L"Новый файл");
-    AppendMenu(hMenuFile, MF_STRING, ID_FILE_SAVE, L"Сохранить");
-    AppendMenu(hMenuFile, MF_STRING, ID_FILE_SAVE_US, L"Сохранить как");
-    AppendMenu(hMenuFile, MF_STRING, ID_FILE_LOAD, L"Загрузить");
-    AppendMenu(hMenuFile, MF_STRING, ID_FILE_EXIT, L"Выход");
-    AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hMenuFile, L"Файл");
-
-    HMENU hMenuObjects = CreatePopupMenu();    
-    AppendMenu(hMenuObjects, MF_STRING, ID_FILE_PLAYER, L"Игрок");
-    AppendMenu(hMenuObjects, MF_STRING, ID_FILE_WALL, L"Стены");
-    AppendMenu(hMenuObjects, MF_STRING, ID_FILE_ENEMY, L"Враг");
-    AppendMenu(hMenuObjects, MF_STRING, ID_FILE_DELETE, L"Удаление");
-    AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hMenuObjects, L"Объекты");
-
-    SetMenu(hwnd, hMenuBar);                   
-}
+std::vector <Object> objects;
 
 void saveToFile(const std::string& filename) {
     std::ofstream out(filename);
@@ -55,8 +24,6 @@ void saveToFile(const std::string& filename) {
             << static_cast<int>(w.coloorWallq.b) << "\n";
     }
 }
-
-
 
 void loadFromFile(const std::string& filename) {
     walls.clear();
@@ -137,7 +104,10 @@ std::string ShowOpenDialog(HWND hwnd, int fileType = 0) {
 void win() {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), L"Engine", sf::Style::Default);
 
-
+    sf::Image icon;
+    icon.loadFromFile("Images/Xui/TestIcon.png");
+    window.setIcon(358, 1080, icon.getPixelsPtr());
+    
     sf::CircleShape player(30);
     sf::RectangleShape enemy(sf::Vector2f(50, 50));
     player.setFillColor(sf::Color::Green);
@@ -145,12 +115,9 @@ void win() {
     enemy.setFillColor(sf::Color::Red);
     enemy.setPosition(300, 100);
 
-
     window.setVerticalSyncEnabled(true);
 
-
-
-    MouseDraw mouse;
+    MouseWall mouse;
     int currentMode = 0;  // 0 - стены, 1 - игрок, 2 - враг
     
     Player cam(100,100);
@@ -232,8 +199,9 @@ void win() {
                     std::cout << "Wall selected!" << std::endl;
                     currentMode = 0;  
                     break;
-                case ID_FILE_ENEMY:
-                    std::string filePath = ShowOpenDialog(hwnd, 1); 
+                case ID_FILE_ENEMY: {
+                    currentMode = 2;
+                    std::string filePath = ShowOpenDialog(hwnd, 1);
                     std::cout << "Enemy selected and succes load" << std::endl;
                     if (!filePath.empty()) {
                         if (en.enemyTexture.loadFromFile(filePath)) {
@@ -244,7 +212,28 @@ void win() {
                             std::cerr << "Failed to load texture!" << std::endl;
                         }
                     }
+                }
                     break;
+                case ID_FILE_CLOSET:
+                    std::cout << "Closet selected" << std::endl;
+                    break;
+            
+                case ID_FILE_TABLE: 
+                    std::cout << "Closet table" << std::endl;
+                    break;
+                
+                case ID_FILE_COMMODE: 
+                    std::cout << "Closet commode" << std::endl;
+                    break;
+                
+                case ID_FILE_CHAIR: 
+                    std::cout << "Closet chair" << std::endl;
+                    break;
+                
+                case ID_FILE_DOOR: 
+                    std::cout << "Closet door" << std::endl;
+                    break;
+                
                 }
             }
             TranslateMessage(&msg);

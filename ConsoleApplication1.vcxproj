@@ -140,6 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ControlEng.h" />
+    <ClInclude Include="HeadObj.h" />
     <ClInclude Include="HeadWin.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Walls.h" />

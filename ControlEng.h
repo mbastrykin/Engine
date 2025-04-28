@@ -6,7 +6,7 @@
 
 extern std::vector<Wall> walls;
 
-class MouseDraw {
+class MouseWall {
 public:
     bool isDraw = false;
     int colorDraw = 1;
