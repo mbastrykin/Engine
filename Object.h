@@ -4,35 +4,40 @@
 
 const float PI = 3.14159265f;
 
-
-class Object {
-//public:
-//    virtual void save(std::ofstream& out) const = 0;
-//    virtual void load(std::ifstream& in) = 0;
-//    virtual void draw(sf::RenderWindow& window) const = 0;
-//    virtual ~Object() = default;
-};
+sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
 
 
-struct Wall : Object {
+ class Object {
+    public:
+        virtual void draw(sf::RenderWindow& window) const = 0;
+        virtual void save(std::ofstream& out) const = 0;
+        virtual ~Object() {} // <--- ВАЖНО!
+    };
+
+
+struct Wall : public Object {
     sf::Vector2f wallX, wallY;
-    int colorWall; // цвет стенки с помощью клавиатуры 1-9
+    int colorWall;
     sf::Color coloorWallq;
 
     Wall() : wallX(0, 0), wallY(0, 0), colorWall(1), coloorWallq(sf::Color::White) {}
-
     Wall(sf::Vector2f a, sf::Vector2f b, int colorWall = 1)
         : wallX(a), wallY(b), colorWall(colorWall), coloorWallq(getWallColor(colorWall)) {
     }
 
-    void draw(sf::RenderWindow& win) const {
+    void draw(sf::RenderWindow& win) const override {
         sf::Vertex line[] = {
             sf::Vertex(wallX, coloorWallq),
             sf::Vertex(wallY, coloorWallq)
-            // Отвечает за вершины линии мб потом сделать - общая длина / n. где n - кол-во вершин    
         };
-        win.draw(line, 2, sf::Lines); // 2 потому что мы рисуем только две вершины
-        // мб потом сделать деление вершин
+        win.draw(line, 2, sf::Lines);
+    }
+
+    void save(std::ofstream& out) const override {
+        out << "Wall "
+            << wallX.x << " " << wallX.y << " "
+            << wallY.x << " " << wallY.y << " "
+            << colorWall << "\n";
     }
 
     sf::Color getWallColor(int index) {
@@ -44,14 +49,15 @@ struct Wall : Object {
         case 5: return sf::Color::Yellow;
         case 6: return sf::Color::Magenta;
         case 7: return sf::Color::Cyan;
-        case 8: return sf::Color(255, 128, 0); // оранжевый
-        case 9: return sf::Color(128, 0, 255); // фиолетовый
+        case 8: return sf::Color(255, 128, 0);
+        case 9: return sf::Color(128, 0, 255);
         default: return sf::Color::White;
         }
     }
 };
 
-class Player {
+
+class Player : public Object {
 public:
 
     sf::Texture playerTexture;
@@ -74,14 +80,18 @@ public:
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
             pos.x += std::cos(angle * PI / 180) * speed;
             pos.y += std::sin(angle * PI / 180) * speed;
+            std::cout << "Px " << pos.x << " Py " << pos.y << std::endl;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
             pos.x -= std::cos(angle * PI / 180) * speed;
             pos.y -= std::sin(angle * PI / 180) * speed;
+            std::cout << "Px " << pos.x << " Py " << pos.y << std::endl;
         }
+      
+        
     }
 
-    void castRays(sf::RenderWindow& win, const std::vector<Wall>& walls) {
+    void castRays(sf::RenderWindow& win, const std::vector<Wall>& walls) { // сделать нормальное отсечение стен
         int numRays = 90;
         float step = fov / numRays;
 
@@ -113,8 +123,7 @@ public:
                         hitPoint = intersect;
                         
                     }   
-                }
-                if (t< 0 && u<= 0 && u>=2){
+                   
                 }
             }
 
@@ -122,8 +131,21 @@ public:
                 sf::Vertex(pos, sf::Color::White),
                 sf::Vertex(hitPoint, sf::Color::White)
             };
+           
             win.draw(ray, 2, sf::Lines);
         }
+    }
+
+    void draw(sf::RenderWindow& win) const override {
+        sf::CircleShape playerShape(5);
+        playerShape.setFillColor(sf::Color::Green);
+        playerShape.setOrigin(5, 5);
+        playerShape.setPosition(pos);
+        win.draw(playerShape);
+    }
+
+    void save(std::ofstream& out) const override {
+        out << "Player " << pos.x << " " << pos.y << " " << angle << "\n";
     }
 
 private:
@@ -144,5 +166,21 @@ public:
 
       pos = { x, y };
     }
+
+};
+
+struct Background {
+public:
+    sf::Texture backTexture;
+    sf::Sprite backSprite;
+    sf::Vector2f pos;
+    float x, y;
+
+    Background(float x, float y) : x(x), y(y) {
+
+        pos = { x, y };
+    }
+    // Получаем размеры текстуры
+ 
 
 };

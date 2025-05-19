@@ -11,7 +11,7 @@
 #include "HeadObj.h"
 
 std::vector<Wall> walls;
-std::vector <Player> player; 
+std::vector <Player> player;
 std::vector <Object> objects;
 
 void saveToFile(const std::string& filename) {
@@ -35,13 +35,46 @@ void loadFromFile(const std::string& filename) {
     float x1, y1, x2, y2;
     int r, g, b;
     while (in >> x1 >> y1 >> x2 >> y2 >> r >> g >> b) {
-        Wall wall(sf::Vector2f(x1, y1), sf::Vector2f(x2, y2), 1); // colorIndex можно установить по умолчанию
+        Wall wall(sf::Vector2f(x1, y1), sf::Vector2f(x2, y2), 1);
         wall.coloorWallq = sf::Color(r, g, b);
         walls.push_back(wall);
     }
     if (in.fail() && !in.eof()) {
         std::cerr << "Error: Failed to read data from file " << filename << std::endl;
     }
+}
+
+std::string LoadFileBackgroundFromFold(HWND hwnd, int fileType = 0) {
+    OPENFILENAMEA ofn;
+    char szFile[260] = { 0 };
+    ZeroMemory(&ofn, sizeof(ofn));
+
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = hwnd;
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile);
+
+    const char* filter = nullptr;
+    switch (fileType) {
+    case 1:
+        filter = "PNG Files (*.png)\0*.png\0All Files (*.*)\0*.*\0";
+        break;
+    case 2:
+        filter = "JPEG Files (*.jpeg)\0*.jpeg\0All Files (*.*)\0*.*\0";
+        break;
+    default:
+        filter = "All Files (*.*)\0*.*\0";
+        break;
+    }
+
+    ofn.lpstrFilter = filter;
+    ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    if (GetOpenFileNameA(&ofn) == TRUE) {
+        return ofn.lpstrFile;
+    }
+    return "";
 }
 
 std::string ShowSaveDialog(HWND hwnd) {
@@ -107,7 +140,7 @@ void win() {
     sf::Image icon;
     icon.loadFromFile("Images/Xui/TestIcon.png");
     window.setIcon(358, 1080, icon.getPixelsPtr());
-    
+
     sf::CircleShape player(30);
     sf::RectangleShape enemy(sf::Vector2f(50, 50));
     player.setFillColor(sf::Color::Green);
@@ -119,8 +152,9 @@ void win() {
 
     MouseWall mouse;
     int currentMode = 0;  // 0 - стены, 1 - игрок, 2 - враг
-    
-    Player cam(100,100);
+
+    Background back(100, 100);
+    Player cam(100, 100);
     Enemy en(50, 50);
 
     HWND hwnd = window.getSystemHandle();
@@ -132,7 +166,7 @@ void win() {
             if (msg.message == WM_COMMAND) {
                 switch (LOWORD(msg.wParam)) {
                 case ID_FILE_NEW: {
-                        if (!walls.empty() || player.getPosition().x >= 0 || enemy.getPosition().x >= 0) {
+                    if (!walls.empty() || player.getPosition().x >= 0 || enemy.getPosition().x >= 0) {
                         int result = MessageBox(hwnd, L"Создать новый файл? Несохраненные данные будут потеряны.",
                             L"Подтверждение", MB_YESNO | MB_ICONQUESTION);
                         if (result == IDNO) break;
@@ -197,10 +231,10 @@ void win() {
                 }
                 case ID_FILE_WALL:
                     std::cout << "Wall selected!" << std::endl;
-                    currentMode = 0;  
+                    currentMode = 0;
                     break;
                 case ID_FILE_ENEMY: {
-                    currentMode = 2;
+                    currentMode = 1;
                     std::string filePath = ShowOpenDialog(hwnd, 1);
                     std::cout << "Enemy selected and succes load" << std::endl;
                     if (!filePath.empty()) {
@@ -213,28 +247,46 @@ void win() {
                         }
                     }
                 }
-                    break;
+                                  break;
                 case ID_FILE_CLOSET:
                     std::cout << "Closet selected" << std::endl;
                     break;
-            
-                case ID_FILE_TABLE: 
+
+                case ID_FILE_TABLE:
                     std::cout << "Closet table" << std::endl;
                     break;
-                
-                case ID_FILE_COMMODE: 
+
+                case ID_FILE_COMMODE:
                     std::cout << "Closet commode" << std::endl;
                     break;
-                
-                case ID_FILE_CHAIR: 
+
+                case ID_FILE_CHAIR:
                     std::cout << "Closet chair" << std::endl;
                     break;
-                
-                case ID_FILE_DOOR: 
+
+                case ID_FILE_DOOR:
                     std::cout << "Closet door" << std::endl;
                     break;
-                
+
+                case ID_LOAD_FILE_BACKGROUND:
+                    currentMode = 3;
+                    std::string filePath = ShowOpenDialog(hwnd, 1);
+                    std::cout << "Background selected and succes load" << std::endl;
+                    if (!filePath.empty()) {
+                        if (back.backTexture.loadFromFile(filePath)) {
+                            back.backSprite.setTexture(back.backTexture);
+                            back.backSprite.setScale(1,1);
+                            std::cout << "Background texture loaded" << std::endl;
+                        }
+                        else {
+                            std::cerr << "Failed to load texture!" << std::endl;
+                        }
+                    }
+
+                   
+                    break;
                 }
+                
             }
             TranslateMessage(&msg);
             DispatchMessage(&msg);
@@ -260,29 +312,33 @@ void win() {
 
         // Отрисовка
         window.clear();
-        
+
         if (currentMode == 0) {
             mouse.drawPreview(window);
-            
+
         }
         else if (currentMode == 1) {
-       
+
         }
         else if (currentMode == 2) {
-            
+
         }
 
 
-      
+
         /*window.draw(player);
         window.draw(enemy);*/
-        for (const auto& wall : walls) {
-            wall.draw(window);  // Рисуем все сохраненные стены
-        }
+        
+        
+        window.draw(back.backSprite);
         cam.update();
         cam.castRays(window, walls);
         window.draw(en.enemySprite);
         window.draw(cam.playerSprite);
+        
+        for (const auto& wall : walls) {
+            wall.draw(window);  // Рисуем все сохраненные стены
+        }
 
         window.display();
     }

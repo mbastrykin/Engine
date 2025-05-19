@@ -16,6 +16,7 @@
 #define ID_FILE_COMMODE 12
 #define ID_FILE_CHAIR 13
 #define ID_FILE_DOOR 14
+#define ID_LOAD_FILE_BACKGROUND 15
 
 
 void AddMenu(HWND hwnd) {
@@ -36,6 +37,7 @@ void AddMenu(HWND hwnd) {
     AppendMenu(hMenuObjects, MF_STRING, ID_FILE_WALL, L"Стены карты");
     AppendMenu(hMenuObjects, MF_STRING, ID_FILE_ENEMY, L"Враг");
     AppendMenu(hMenuObjects, MF_STRING, ID_FILE_DELETE, L"Удаление");
+    AppendMenu(hMenuObjects, MF_STRING, ID_LOAD_FILE_BACKGROUND, L"Фон");
     AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hMenuObjects, L"Объекты");
 
     HMENU hMenuInterior = CreatePopupMenu();
@@ -47,9 +49,9 @@ void AddMenu(HWND hwnd) {
     AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hMenuInterior, L"Интерьер");
 
     HMENU hMenulighting = CreatePopupMenu();
-    AppendMenu(hMenulighting, MF_STRING, ID_FILE_NEW, L"Шкаф");
-    AppendMenu(hMenulighting, MF_STRING, ID_FILE_SAVE, L"Стол");
-    AppendMenu(hMenulighting, MF_STRING, ID_FILE_SAVE_US, L"Комод");
+    AppendMenu(hMenulighting, MF_STRING, ID_FILE_NEW, L"Свет");
+    AppendMenu(hMenulighting, MF_STRING, ID_FILE_SAVE, L"Лампа");
+    AppendMenu(hMenulighting, MF_STRING, ID_FILE_SAVE_US, L"Фонарик");
     AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hMenulighting, L"Освещение");
 
     SetMenu(hwnd, hMenuBar);
