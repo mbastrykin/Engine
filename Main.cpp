@@ -41,9 +41,20 @@
 //        }
 //};
 
+int choose = 0;
 
 int main(){
-    win();
+   /* setlocale(LC_ALL, "rus");
+    std::cout << "\n\n\n\n\t\t\t\tВыбери режим" << std::endl;
+    std::cout << "\t\t\t\t1. Создание карт" << std::endl;
+    std::cout << "\t\t\t\t2. Тест игры" << std::endl;
+    std::cin >> choose;*/
+   /* switch (choose){
+    case 1: std::cout << "Запуск" << std::endl;        */
+        win();
+    //case 2: std::cout << "Еще не готово..." << std::endl;//game();
+    //}
+    
     return 0;
 
 

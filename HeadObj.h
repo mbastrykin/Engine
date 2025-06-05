@@ -17,11 +17,16 @@
 #define ID_FILE_CHAIR 13
 #define ID_FILE_DOOR 14
 #define ID_LOAD_FILE_BACKGROUND 15
+#define ID_LOAD_LIGHT 16
+#define ID_LOAD_FLASHLIGHT 17
+#define ID_LOAD_LAMP 18
+#define ID_LOAD_FILE_TEXT 19
+//#define ID_LOAD_TESTGAME 19
 
 
 void AddMenu(HWND hwnd) {
 
-    HMENU hMenuBar = CreateMenu();             // Главное меню
+    HMENU hMenuBar = CreateMenu();             // Шапка
 
     HMENU hMenuFile = CreatePopupMenu();
     AppendMenu(hMenuFile, MF_STRING, ID_FILE_NEW, L"Новый файл");
@@ -38,6 +43,7 @@ void AddMenu(HWND hwnd) {
     AppendMenu(hMenuObjects, MF_STRING, ID_FILE_ENEMY, L"Враг");
     AppendMenu(hMenuObjects, MF_STRING, ID_FILE_DELETE, L"Удаление");
     AppendMenu(hMenuObjects, MF_STRING, ID_LOAD_FILE_BACKGROUND, L"Фон");
+    AppendMenu(hMenuObjects, MF_STRING, ID_LOAD_FILE_TEXT, L"Текст");
     AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hMenuObjects, L"Объекты");
 
     HMENU hMenuInterior = CreatePopupMenu();
@@ -49,10 +55,14 @@ void AddMenu(HWND hwnd) {
     AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hMenuInterior, L"Интерьер");
 
     HMENU hMenulighting = CreatePopupMenu();
-    AppendMenu(hMenulighting, MF_STRING, ID_FILE_NEW, L"Свет");
-    AppendMenu(hMenulighting, MF_STRING, ID_FILE_SAVE, L"Лампа");
-    AppendMenu(hMenulighting, MF_STRING, ID_FILE_SAVE_US, L"Фонарик");
+    AppendMenu(hMenulighting, MF_STRING, ID_LOAD_LIGHT, L"Свет");
+    AppendMenu(hMenulighting, MF_STRING, ID_LOAD_LAMP, L"Лампа");
+    AppendMenu(hMenulighting, MF_STRING, ID_LOAD_FLASHLIGHT, L"Фонарик");
     AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hMenulighting, L"Освещение");
+
+   /* HMENU hMenuTestGame = CreatePopupMenu();
+    AppendMenu(hMenuTestGame, MF_STRING, ID_LOAD_TESTGAME, L"Запуск теста");
+    AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hMenuTestGame, L"Тест");*/
 
     SetMenu(hwnd, hMenuBar);
 }
