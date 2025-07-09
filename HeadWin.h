@@ -138,16 +138,18 @@ std::string ShowOpenDialog(HWND hwnd, int fileType = 0) {
 
 
 void win() {
-    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), L"Engine", sf::Style::Default);
+    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), L"Huy", sf::Style::Default);
 
-   /* sf::Image icon;
-    icon.loadFromFile("Images/Xui/TestIcon.png");
-    window.setIcon(358, 1080, icon.getPixelsPtr());*/
+    /* sf::Image icon;
+     icon.loadFromFile("Images/Xui/TestIcon.png");
+     window.setIcon(358, 1080, icon.getPixelsPtr());*/
+
+    sf::Clock clock;
 
     window.setVerticalSyncEnabled(true);
 
     HWND hwnd = window.getSystemHandle();
-    
+
     MouseWall mouse;
 
     Background* background = nullptr;
@@ -162,6 +164,12 @@ void win() {
     int currentMode = 0;  // 0 - стены, 1 - игрок, 2 - враг
 
     while (window.isOpen()) {
+
+        float time = clock.getElapsedTime().asMicroseconds();
+        clock.restart();
+        int delaytime = 600;
+        time = time / delaytime++;
+
         MSG msg;
         while (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_COMMAND) {
@@ -171,7 +179,7 @@ void win() {
                         L"Подтверждение", MB_YESNO | MB_ICONQUESTION);
                     if (result == IDNO) break;
                     walls.clear();
-                    
+
                     std::cout << "New file created" << std::endl;
                     break;
                 }
@@ -218,14 +226,14 @@ void win() {
                     std::string filePath = ShowOpenDialog(hwnd, 1);  // 1 - PNG
                     std::cout << "Player selected and succes load" << std::endl;
                     if (!filePath.empty()) {
-                        cam = new Player(0, 0);
-                        
+                        cam = new Player(0, 0, 100, 100);
+
                         if (cam->playerTexture.loadFromFile(filePath)) {
                             cam->playerSprite.setTexture(cam->playerTexture);
                             cam->setTextureSize(window);
                             std::cout << "Player texture loaded" << std::endl;
                             cam->isCreatePlayer = true;
-                            
+
                         }
                         else {
                             std::cerr << "Failed to load texture!" << std::endl;
@@ -242,19 +250,19 @@ void win() {
                     std::string filePath = ShowOpenDialog(hwnd, 1);
                     std::cout << "Enemy selected and succes load" << std::endl;
                     if (!filePath.empty()) {
-                        en = new Enemy(500, 500);
-                        
+                        en = new Enemy(500, 500, cam);
+
                         if (en->enemyTexture.loadFromFile(filePath)) {
                             en->enemySprite.setTexture(en->enemyTexture);
                             std::cout << "Enemy texture loaded" << std::endl;
-                           
+
                         }
                         else {
                             std::cerr << "Failed to load texture!" << std::endl;
                         }
                     }
                 }
-                   break;
+                                  break;
                 case ID_FILE_CLOSET:
                     std::cout << "Closet selected" << std::endl;
                     break;
@@ -292,13 +300,13 @@ void win() {
                     light = new Light(500, 500);
 
                 }
-               /* case ID_LOAD_FILE_TEXT: {
-                    std::cout << "Text selected" << std::endl;
-                    text = new Text(50,50);
-                }*/
-                /*case ID_LOAD_TESTGAME: {
-                    TestGame();
-                }*/
+                                  /* case ID_LOAD_FILE_TEXT: {
+                                       std::cout << "Text selected" << std::endl;
+                                       text = new Text(50,50);
+                                   }*/
+                                   /*case ID_LOAD_TESTGAME: {
+                                       TestGame();
+                                   }*/
                 }
             }
             TranslateMessage(&msg);
@@ -343,25 +351,25 @@ void win() {
         if (background) {
             window.draw(background->backSprite);
         }
-        
+
         if (cam) {
-            cam->update();
+            cam->update(time);
             cam->castRays(window, walls);
             window.draw(cam->playerSprite);
         }
         if (en) {
-            en->update();
+                       en->castRays(window,walls);
+                       en->update();
             window.draw(en->enemySprite);
-           
+
         }
         if (light) {
-            light->TestLight(window,walls);
+            light->TestLight(window, walls);
         }
         //for (const auto& wall : walls) {
         //    wall.draw(window);  // Рисуем все сохраненные стены
         //}
-       
-        
+
         for (const auto& wall : walls) {
             if (wall.colorWall == 1) {
                 wall.draw(window);
@@ -372,7 +380,7 @@ void win() {
                     sf::Vertex(wall.wallY, wall.coloorWallq)
                 };
                 window.draw(line, 2, sf::Lines);
-               
+
             }
         }
         window.display();

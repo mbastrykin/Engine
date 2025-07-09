@@ -1,0 +1,5 @@
+cmake_minimum_reaured(VERSION 4.0.2)
+
+project(Engine)
+
+add_executable(Engine WIN32 main.cpp)

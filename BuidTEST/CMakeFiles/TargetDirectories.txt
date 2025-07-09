@@ -1,0 +1,2 @@
+D:/VisualStudioProject/ConsoleApplication1/BuidTEST/CMakeFiles/ALL_BUILD.dir
+D:/VisualStudioProject/ConsoleApplication1/BuidTEST/CMakeFiles/ZERO_CHECK.dir
