@@ -2,6 +2,10 @@
 #include <SFML/Graphics.hpp>
 #include "ControlEng.h"
 #include <variant>
+#include <cmath>
+#include <SFML/Audio.hpp>
+#include "WhereAnySounds.h"
+//#include "Sounds.h"
 
 const float PI = 3.14159265f;
 
@@ -59,24 +63,53 @@ struct Wall : public Object {
 };
 
 
+
+
+
 struct Player : public Object {
 public:
 
-    bool isCreatePlayer = false; bool isPlayerWalk = false;
-    bool PlayerIsDetected = false; 
+    //Sounds soundShoot("shoot.ogg");
+    //Sounds soundDeath{ "DeathPlayer.mp3" };
+    
+   
+    sf::Sound sound;
+    
+    //Sounds soundReload("");
 
     sf::Texture playerTexture;sf::Sprite playerSprite;
     sf::Vector2f posPlayer;
+    // сделать звуки всякой хуйни тестово и сделать звуки на определенную дистанцию
+    // игрок бежит - звук > идет < стоит - 
+    // игрок хромает (хп <= 50) звук +- бежит так же кровавые сопли
+    // 
+
+    
+
+    bool isCreatePlayer = false; bool isPlayerWalk = false;
+    bool PlayerIsDetected = false; bool isPlayerAttack = false;
+    bool shootgunInInventory = false; bool shootgun = true;
+    
+
+    int playerHP = 100;
 
     float angle = 0; float fov = 90; 
     float speed = 5.0f; float playerRadius = 15.f;
     float x, y; double w, h;
-
+    
+    
+    std::vector<sf::SoundBuffer> buffer;
+    std::vector<int> playerInventory;
 
     Player(float x, float y, float w, float h) : x(x), y(y), w(w), h(h) {
-
+       
+        
+        /*buffer.loadFromFile("DeathPlayer.ogg");
+        sound.setBuffer(buffer);*/
+        
         posPlayer = { x, y };
         playerSprite.setTextureRect(sf::IntRect(0, 0, w, h));
+        playerInventory.resize(5);
 
     }
 
@@ -89,28 +122,35 @@ public:
         float scaleY = static_cast<float>(winSize.y) / texSize.y;
     }
     void update(float time) {
+        playerMove_Anim(time);
+        playerIsAttack();
+       
+        
+    }
+
+    void playerMove_Anim(float time) {
         isPlayerWalk = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
             angle -= 2;
             if (angle < 0) angle += 360;
-            std::cout << "angle = " << angle << std::endl;
+           // std::cout << "angle = " << angle << std::endl;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
             angle += 2;
             if (angle >= 360) angle -= 360;
-            std::cout << "angle = " << angle << std::endl;
+            //std::cout << "angle = " << angle << std::endl;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
             posPlayer.x += std::cos(angle * PI / 180) * speed;
             posPlayer.y += std::sin(angle * PI / 180) * speed;
             isPlayerWalk = true;
-            std::cout << "Px " << posPlayer.x << " Py " << posPlayer.y << std::endl;
+            //std::cout << "Px " << posPlayer.x << " Py " << posPlayer.y << std::endl;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
             posPlayer.x -= std::cos(angle * PI / 180) * speed;
             posPlayer.y -= std::sin(angle * PI / 180) * speed;
             isPlayerWalk = true;
-            std::cout << "Px " << posPlayer.x << " Py " << posPlayer.y << std::endl;
+            //std::cout << "Px " << posPlayer.x << " Py " << posPlayer.y << std::endl;
         }
         if (isPlayerWalk) {
             CurrentFrame += 0.005 * time;
@@ -134,7 +174,45 @@ public:
         playerSprite.setPosition(posPlayer.x - 48, posPlayer.y - 48);
     }
 
-    void castRays(sf::RenderWindow& win, std::vector<Wall>& walls) { // сделать нормальное отсечение стен
+    void soundPlayer() {
+        if (isPlayerWalk) {
+
+        }
+    }
+
+    //void playerKeyboard() { // сюда свитч
+    //    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) {
+    //        if (shootgunInInventory) {
+    //            playerSprite.setColor(sf::Color::Yellow);
+    //        }
+    //    }
+    //    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2)) {
+    //    }
+    //    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3)) {
+    //    }
+    //    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4)) {
+    //    }
+    //    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5)) {
+    //    }
+    //}
+    void playerIsAttack() {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+            isPlayerAttack = true;
+            soundTest.play();
+            playerSprite.setColor(sf::Color::Blue);
+            //PlaysSound("SoundMusic/Sounds/DeathPlayer.ogg");
+            
+        }
+        else playerSprite.setColor(sf::Color::White);
+    }
+    //void playerPickUpItem() {
+    //    if (posPlayer == furn->posSquare) {
+    //        shootgunInInventory = true; // сюда свитч сделать
+    //        playerInventory.push_back(1);
+    //    }
+    //}
+
+    void castRays(sf::RenderWindow& win, std::vector<Wall>& walls) { 
         int numRays = 120;
         float step = fov / numRays;
 
@@ -217,12 +295,13 @@ public:
     float fov = 90; float angle = 0; float length;
     float lookAngle = 0.f; float lookTimer = 0.f; 
     float maxLookTime = 120.f; float originalAngle = 0.f; 
+    float distantAttack = 5.f;
 
     bool isEnemyWalk = false; bool isEnemyCreated = false;
-    bool isAttack = false; bool playerIsSeeEnemy = false;
+    bool isAttackPlayer = false; bool playerIsSeeEnemy = false;
     bool enemySeePlayer = false; bool isLookingAround = false;
     bool lookDirection = true; bool isGoingToLastPos = false;
-    bool searchPlayer = false;
+    bool searchPlayer = false;  
     
     Enemy(float x, float y, Player* playerT) : x(x), y(y), playerT(playerT) {
         posEnemy = { x, y };
@@ -230,7 +309,6 @@ public:
         enemySprite.setTextureRect(sf::IntRect(0, 0, 100, 100));
         enemySprite.setColor(sf::Color::Red);
     }
-
 
     void castRays(sf::RenderWindow& win,std::vector<Wall>walls) {
         int numRays = 120;
@@ -305,74 +383,126 @@ public:
     }
     void runAfterPlayer() {
         if (enemySeePlayer && playerT->PlayerIsDetected) {
-            
+
+            isGoingToLastPos = false;
+            isLookingAround = false;
+
             dir = playerT->posPlayer - posEnemy;
             length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
             if (length != 0) {
                 dir.x /= length;
                 dir.y /= length;
             }
-
+            isEnemyWalk = true;
             speedEnemy = 3.f;
             posEnemy += dir * speedEnemy;
+
             enemySprite.setPosition(posEnemy.x - 50, posEnemy.y - 50);
             angle = std::atan2(dir.y, dir.x) * 180 / PI;
 
             lastPlayerPosSee = playerT->posPlayer;
-
-            isLookingAround = false;
         }
+        else {
 
-        else if (!enemySeePlayer && !isGoingToLastPos && !isLookingAround) {
-            isGoingToLastPos = true;
-        }
-
-        if (isGoingToLastPos) {
-            dir = lastPlayerPosSee - posEnemy;
-
-            length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
-            if (length > 2.f) {
-                dir.x /= length;
-                dir.y /= length;
-
-                speedEnemy = 1.f;
-                posEnemy += dir * speedEnemy;
-                enemySprite.setPosition(posEnemy.x - 50, posEnemy.y - 50);
-
-                angle = std::atan2(dir.y, dir.x) * 180 / PI;
+            if (!isGoingToLastPos && !isLookingAround) {
+                isGoingToLastPos = true;
+                isEnemyWalk = true;
             }
-            else {
-                isGoingToLastPos = false;
-                isLookingAround = true;
-                lookTimer = 0.f;
-                originalAngle = angle;
-            }
-        }
 
+            if (isGoingToLastPos) {
+                dir = lastPlayerPosSee - posEnemy;
+                length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+                if (length > 2.f) {
+                    dir.x /= length;
+                    dir.y /= length;
+                    isEnemyWalk = true;
+
+                    speedEnemy = 1.f;
+                    posEnemy += dir * speedEnemy;
+                    enemySprite.setPosition(posEnemy.x - 50, posEnemy.y - 50);
+                    angle = std::atan2(dir.y, dir.x) * 180 / PI;
+                }
+                else {
+
+                    isGoingToLastPos = false;
+                    isEnemyWalk = false;
+
+                    lookTimer = 0.f;
+                    originalAngle = angle;
+                    isLookingAround = true;
+                }
+            }
+            
+        }
+    }
+
+    void EnemyLookingAround() {
         if (isLookingAround) {
             lookTimer += 1.f;
-            if (static_cast<int>(lookTimer) % 60 < 30) {
-                lookAngle = originalAngle + 30.f;
-            }
-            else {
-                lookAngle = originalAngle - 30.f;
-            }
-            angle = lookAngle;
+
+            float offset = std::sin(lookTimer * 0.05f) * 30.f;
+            angle = originalAngle + offset;
+
             if (lookTimer > maxLookTime) {
                 angle = originalAngle;
                 isLookingAround = false;
-                update();
             }
         }
     }
 
-    void update() {
+   
+    void animEnemy(float time) {
+        if (isEnemyWalk) {
+            if (angle < 0) angle += 360;
+            //angle += 2;
+            if (angle >= 360) angle -= 360;
+            CurrentFrame += 0.005 * time;
+            if (CurrentFrame > 3) CurrentFrame -= 3;
+            if (angle >= 45 && angle < 135) {
+                enemySprite.setTextureRect(sf::IntRect(96 * int(CurrentFrame), 0, 96, 96));
+            }
+            else if (angle >= 135 && angle < 225) {
+                enemySprite.setTextureRect(sf::IntRect(96 * int(CurrentFrame), 130, 100, 100));
+            }
+            else if (angle >= 225 && angle < 315) {
+                enemySprite.setTextureRect(sf::IntRect(96 * int(CurrentFrame), 307, 96, 96));
+            }
+            else {
+                enemySprite.setTextureRect(sf::IntRect(96 * int(CurrentFrame), 200, 96, 96));
+            }
+        }
+        else { enemySprite.setTextureRect(sf::IntRect(96 * int(CurrentFrame), 0, 96, 96)); }
+    }
+
+    void update(float time) {
         runAfterPlayer();
+        EnemyLookingAround();
+        animEnemy(time);
     }
     void draw() {
 
     }
+    private :
+		float CurrentFrame = 0;
 };
+
+struct Furniture {
+  
+    sf::Vector2f posSquare;
+    float x = 200; float y = 200;
+
+    Furniture(float x, float y) : x(x), y(y) {
+        posSquare = {x,y};
+    }
+
+    void draw(sf::RenderWindow& win) {
+        sf::RectangleShape square(sf::Vector2f(50.f, 50.f));
+        square.setOrigin(10, 15);
+        square.setPosition(200,200);
+        win.draw(square);
+    }
+
+    };
 
 
 struct Background {
@@ -404,6 +534,57 @@ struct Background {
      
 };
 
+
+
+struct Floor {
+    Floor(const std::string& file) {
+        if (!texture.loadFromFile("Images/Textures/" + file)) {
+            throw std::runtime_error("Не удалось загрузить текстуру: " + file);
+        }
+        float w = static_cast<float>(texture.getSize().x);
+        float h = static_cast<float>(texture.getSize().y);
+
+        quad.setPrimitiveType(sf::Quads);
+        quad.resize(4);
+
+        // Позиции вершин в форме ромба
+        quad[0].position = { 0.f, h / 1.f };    // Лево
+        quad[1].position = { w / 1.5f, 0.f };    // Верх
+        quad[2].position = { w, h / 2.f };      // Право
+        quad[3].position = { w / 2.f, h };      // Низ
+
+        // Текстурные координаты (берём весь квадрат)
+        quad[0].texCoords = { 0.f, 0.f };
+        quad[1].texCoords = { w, 0.f };
+        quad[2].texCoords = { w, h };
+        quad[3].texCoords = { 0.f, h };
+    }
+
+    void setPosition(float x, float y) {
+        sf::Vector2f offset(x, y);
+        float w = static_cast<float>(texture.getSize().x);
+        float h = static_cast<float>(texture.getSize().y);
+
+        
+        quad[0].position = offset + sf::Vector2f(0.f, h / 2.f);
+        quad[1].position = offset + sf::Vector2f(w / 2.f, 0.f);
+        quad[2].position = offset + sf::Vector2f(w, h / 2.f);
+        quad[3].position = offset + sf::Vector2f(w / 2.f, h);
+    }
+
+
+
+    void draw(sf::RenderWindow& win) {
+        sf::RenderStates states;
+        states.texture = &texture;
+        win.draw(quad, states);
+    }
+
+private:
+    sf::Texture texture;
+    sf::VertexArray quad;
+};
+
 struct Text {
     Text(const std::string& path, const sf::RenderWindow& window) {
         font.loadFromFile(path); 
@@ -425,14 +606,14 @@ public:
 
     sf::Vector2f start;
     sf::Vector2f pos;
-    float angle = 0; // направление взгляда
-    float fov = 360;  // поле зрения
+    float angle = 0; 
+    float fov = 360;  
     float speed = 5.0f;
     float x, y;
     bool isDraw = false;
 
     void TestLight(sf::RenderWindow& win, const std::vector<Wall>& walls) { // сделать нормальное отсечение стен
-        int numRays = 720;
+        int numRays = 720; // тестово въебал 720 потом накинуть больше +- 3000, увеличить длину лучей и дальность освещения 
         float step = fov / numRays;
 
         for (int i = 0; i < numRays; i++) {
@@ -477,11 +658,7 @@ public:
     }
 
     void draw(sf::RenderWindow& win) {
-        sf::CircleShape playerShape(5);
-        playerShape.setFillColor(sf::Color::Green);
-        playerShape.setOrigin(10, 15);
-        playerShape.setPosition(pos);
-        win.draw(playerShape);
+        
     }
 
     

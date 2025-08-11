@@ -16,11 +16,13 @@
 #define ID_FILE_COMMODE 12
 #define ID_FILE_CHAIR 13
 #define ID_FILE_DOOR 14
+#define ID_FILE_FLOOR 20
 #define ID_LOAD_FILE_BACKGROUND 15
 #define ID_LOAD_LIGHT 16
 #define ID_LOAD_FLASHLIGHT 17
 #define ID_LOAD_LAMP 18
 #define ID_LOAD_FILE_TEXT 19
+
 //#define ID_LOAD_TESTGAME 19
 
 
@@ -52,6 +54,7 @@ void AddMenu(HWND hwnd) {
     AppendMenu(hMenuInterior, MF_STRING, ID_FILE_COMMODE, L"Комод");
     AppendMenu(hMenuInterior, MF_STRING, ID_FILE_CHAIR, L"Стул");
     AppendMenu(hMenuInterior, MF_STRING, ID_FILE_DOOR, L"Дверь");
+    AppendMenu(hMenuInterior, MF_STRING, ID_FILE_FLOOR, L"Пол");
     AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hMenuInterior, L"Интерьер");
 
     HMENU hMenulighting = CreatePopupMenu();

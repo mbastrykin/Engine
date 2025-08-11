@@ -44,6 +44,7 @@
 int choose = 0;
 
 int main(){
+   
    /* setlocale(LC_ALL, "rus");
     std::cout << "\n\n\n\n\t\t\t\tВыбери режим" << std::endl;
     std::cout << "\t\t\t\t1. Создание карт" << std::endl;
@@ -57,6 +58,7 @@ int main(){
     
     return 0;
 
+    
 
     //    /* if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
     //         if (lu) { a1.y += 1; a4.y -= 1; a2.y -= 1; a3.y += 1; if (a1.y > 400) lu = false; }

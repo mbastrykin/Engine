@@ -10,6 +10,9 @@
 #include "Object.h"
 #include "HeadObj.h"
 #include <optional>
+#include "Sounds.h"
+#include "WhereAnySounds.h"
+#include "WhereAnyObjects.h"
 
 std::vector<Wall> walls;
 std::vector <Player> player;
@@ -143,6 +146,9 @@ void win() {
     /* sf::Image icon;
      icon.loadFromFile("Images/Xui/TestIcon.png");
      window.setIcon(358, 1080, icon.getPixelsPtr());*/
+
+   
+    
 
     sf::Clock clock;
 
@@ -333,6 +339,11 @@ void win() {
 
         // Отрисовка
         window.clear();
+        /*Laminatfloor.draw(window);
+        Laminatfloor.setPosition(2000, );*/
+        
+        //Laminat[0].setPosition(0, 0); // первый элемент
+        //Laminat[0].draw(window);
 
         if (currentMode == 0) {
             mouse.drawPreview(window);
@@ -347,7 +358,9 @@ void win() {
         /*window.draw(player);
         window.draw(enemy);*/
 
-
+        
+        
+       
         if (background) {
             window.draw(background->backSprite);
         }
@@ -355,11 +368,13 @@ void win() {
         if (cam) {
             cam->update(time);
             cam->castRays(window, walls);
+            
             window.draw(cam->playerSprite);
+            
         }
         if (en) {
-                       en->castRays(window,walls);
-                       en->update();
+            en->castRays(window,walls);
+            en->update(time);
             window.draw(en->enemySprite);
 
         }
